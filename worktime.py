@@ -69,8 +69,10 @@ def _get_args():
     parser.add_argument("-d", "--debug", action='store_true')
 
     parser.add_argument("-p", "--period", action='store_true')
-    parser.add_argument("--start_date", nargs=1, help='Filter used with the --period command')
-    parser.add_argument("--end_date", nargs=1, help='Filter used with the --period command')
+    parser.add_argument("-sd", "--start_date", nargs=1,
+            help='Filter used with the --period command (use now to use today\'s day)')
+    parser.add_argument("-ed", "--end_date", nargs=1,
+            help='Filter used with the --period command')
 
     parser.add_argument("-b", "--backup", action='store_true',
             help='Backup the database')
