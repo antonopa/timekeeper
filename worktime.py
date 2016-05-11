@@ -55,11 +55,16 @@ def handle_db_calls(args):
 def _get_args():
     """ Add all the needed arguments in ArgumentParser and return the ones with which this was called """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--add", nargs='*', help='Add new day in the DB')
-    parser.add_argument("-o", "--out", action='store_true', help='Print the end of the current work day')
-    parser.add_argument("-s", "--show", action='count', help='Print report. Repeat the option for more info')
-    parser.add_argument("-u", "--update", nargs='*', help='Update end of today\'s work day. Optionally provide time else current system time is used')
-    parser.add_argument("-l", "--lunch", type=int, nargs='+', help='Update lunch duration for today')
+    parser.add_argument("-a", "--add", nargs='*',
+            help='Add new day in the DB')
+    parser.add_argument("-o", "--out", action='store_true',
+            help='Print the end of the current work day')
+    parser.add_argument("-s", "--show", action='count',
+            help='Print report. Repeat the option for more info')
+    parser.add_argument("-u", "--update", nargs='*',
+            help='Update end of today\'s work day. Optionally provide time else current system time is used')
+    parser.add_argument("-l", "--lunch", type=int, nargs='+',
+            help='Update lunch duration for today')
     parser.add_argument("-t", "--today", action='store_true')
     parser.add_argument("-d", "--debug", action='store_true')
 
@@ -67,8 +72,13 @@ def _get_args():
     parser.add_argument("--start_date", nargs=1, help='Filter used with the --period command')
     parser.add_argument("--end_date", nargs=1, help='Filter used with the --period command')
 
-    parser.add_argument("-b", "--backup", action='store_true', help='Backup the database')
-    parser.add_argument("-c", "--custom", nargs='*', help='Call any method from the __Sqlite class. 1st argument is method name anything else is passed as arguments to that method')
+    parser.add_argument("-b", "--backup", action='store_true',
+            help='Backup the database')
+    parser.add_argument("-c", "--custom", nargs='*',
+            help=("Call any method from the __Sqlite class."
+                  "1st argument is method name anything else "
+                  "is passed as arguments to that method")
+            )
 
     return parser.parse_args()
 
