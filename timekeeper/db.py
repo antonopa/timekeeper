@@ -132,7 +132,11 @@ class __Sqlite:
         return res
 
     def overtime_to_str(self):
-        return str(timedelta(seconds = sum([ x[1] for x in self.get_overtime() ])))
+        time_diff = sum([ x[1] for x in self.get_overtime() ])
+        return "{} time: {}".format(
+                "Excess" if time_diff > 0 else "Due",
+                str(timedelta(seconds = abs(time_diff)))
+                )
 
     def add_vacation(self, start_date = None, end_date = None):
         _query = "INSERT INTO {table} VALUES(DATE('{_d}'), TIME('00:00:00'), TIME('00:00:00'), 1, 0);"
