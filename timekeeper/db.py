@@ -44,14 +44,14 @@ class __Sqlite:
         self.cursor.execute(table_cmd.format(table=self.table))
         self.conn.commit()
 
-    def insert_day(self, day='now', end=None):
+    def insert_day(self, day='now', end=None, lunch_duration=45):
         if not end:
             end = (datetime.now() + timedelta(hours=8, minutes=45)).strftime("%H:%M:%S")
         start = datetime.now().strftime("%H:%M:%S")
-        _query = "INSERT INTO {table} VALUES(DATE('{_d}'), TIME('{_s}'), TIME('{_e}'), 0, 45);"
+        _query = "INSERT INTO {table} VALUES(DATE('{_d}'), TIME('{_s}'), TIME('{_e}'), 0, {_l});"
         if self.debug:
-            print(_query.format(table=self.table, _d=day, _s=start, _e=end))
-        self.cursor.execute(_query.format(table=self.table, _d=day, _s=start, _e=end))
+            print(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
+        self.cursor.execute(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
         self.conn.commit()
 
     def update_start(self, day='now', time='now'):

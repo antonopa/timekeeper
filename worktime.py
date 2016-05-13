@@ -18,6 +18,12 @@ def handle_db_calls(args):
             tk.debug = True
         if args.add:
             tk.insert_day(args.add[0])
+        if args.balance:
+            print(args.balance)
+            tk.insert_day(day='now' if not args.start_date else args.start_date[0],
+                    end=datetime.now().strftime("%H:%M:%S"),
+                    lunch_duration=0)
+
         if args.out:
             print(tk.expected_time())
         if args.show:
@@ -65,6 +71,8 @@ def _get_args():
             help='Update end of today\'s work day. Optionally provide time else current system time is used')
     parser.add_argument("-l", "--lunch", type=int, nargs='+',
             help='Update lunch duration for today')
+    parser.add_argument("--balance", action='store_true',
+            help='Add a balance day (overtime burnout)')
     parser.add_argument("-t", "--today", action='store_true')
     parser.add_argument("-d", "--debug", action='store_true')
 
