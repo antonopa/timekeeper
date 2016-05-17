@@ -8,6 +8,13 @@ import shutil
 
 __sqlite_file = '/home/antonopa/.timekeeper.sqlite'
 
+def call_retriever(func):
+    """ Harvest input argument for reporting period and call the desired
+        function """
+    start = args.start_date[0] if args.start_date else None
+    end = args.end_date[0] if args.end_date else None
+    return func(start, end)
+
 def handle_db_calls(args):
     """ Handle all db related calls here """
 
@@ -27,20 +34,16 @@ def handle_db_calls(args):
         if args.out:
             print(tk.expected_time())
         if args.show:
-            if args.show == 1:
-                myp(tk.overtime_to_str())
-            elif args.show == 2:
+            if args.show >= 1:
                 print("Overtime sum: ")
-                myp(tk.overtime_to_str())
+                myp(call_retriever(tk.overtime_to_str))
+            if args.show >= 2:
                 print("\nOvertime per day: ")
-                myp(tk.get_overtime())
-            else:
-                print("Overtime sum: ")
-                myp(tk.overtime_to_str())
-                print("\nOvertime per day: ")
-                myp(tk.get_overtime())
+                myp(call_retriever(tk.get_overtime))
+            if args.show == 3:
                 print("\nEverything: ")
-                myp(tk.get_all())
+                myp(call_retriever(tk.get_period))
+
         if args.update is not None:
             end = args.update[0] if args.update else 'now'
             tk.update_end(day='now', end=end)
