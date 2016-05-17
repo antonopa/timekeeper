@@ -100,7 +100,7 @@ class __Sqlite:
 
         return res
 
-    def get_period(self, start_date=None, end_date=None):
+    def _create_query(self, start_date=None, end_date=None):
         _query = ("SELECT day,start,end,lunch_duration,"
                   "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) as diff_sec "
                   "from work_days where vacation!=1 {_where} order by day")
@@ -117,23 +117,20 @@ class __Sqlite:
         if self._debug:
             print(_query)
 
-        return self._parse_results(self.cursor.execute(_query))
+        return _query
+
+    def get_period(self, start_date=None, end_date=None):
+
+        return self._parse_results(self.cursor.execute(self._create_query(start_date, end_date)))
 
 
     def get_all(self):
-        """ get all fields for all days """
-        _query = ("SELECT day,start,end,lunch_duration,"
-                "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) as diff_sec "
-                "from work_days where vacation!=1 order by day")
+        return self.get_period()
 
-        return self._parse_results(self.cursor.execute(_query))
+    def get_overtime(self, start_date=None, end_date=None):
+        full_day = 480 + 45
 
-
-    def get_overtime(self):
-        full_day = 480
-        cmd = "SELECT day,start,end,((strftime('%s', end)-strftime('%s', start))/60 - lunch_duration) \
-               as diff_sec from work_days where vacation!=1 order by day"
-        c = self.cursor.execute(cmd)
+        c = self.cursor.execute(self._create_query(start_date, end_date))
 
         res = []
         for row in c.fetchall():
@@ -141,8 +138,8 @@ class __Sqlite:
             res.append( (row['day'], overtime, _sec2humantime(abs(overtime))) )
         return res
 
-    def overtime_to_str(self):
-        time_diff = sum([ x[1] for x in self.get_overtime() ])
+    def overtime_to_str(self, start_date=None, end_date=None):
+        time_diff = sum([ x[1] for x in self.get_overtime(start_date, end_date) ])
         return "{} time: {}".format(
                 "Excess" if time_diff > 0 else "Due",
                 str(timedelta(seconds = abs(time_diff)))
