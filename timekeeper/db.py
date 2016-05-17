@@ -38,10 +38,16 @@ class __Sqlite:
             pass
         self.conn.close()
 
-    def initialize_db(self):
+    def initialize_db(self, table = None):
         """ initialize a database """
-        table_cmd = "CREATE TABLE {table} (day text, start text, end text, vacation int)"
-        self.cursor.execute(table_cmd.format(table=self.table))
+        db_table = table if table else self.table
+        table_cmd = ("CREATE TABLE {_t} "
+                     "(day text, start text, end text, vacation int, lunch_duration int, unique(day))")
+        self.cursor.execute(table_cmd.format(_t=db_table))
+
+        create_index = "CREATE UNIQUE INDEX date_idx ON {_t} (day)"
+        self.cursor.execute(create_index.format(_t=db_table))
+
         self.conn.commit()
 
     def insert_day(self, day='now', end=None, lunch_duration=45):
