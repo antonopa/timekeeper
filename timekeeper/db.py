@@ -51,14 +51,18 @@ class __Sqlite:
         self.conn.commit()
 
     def insert_day(self, day='now', end=None, lunch_duration=45):
+        """ Insert a new entry (aka work day) """
         if not end:
             end = (datetime.now() + timedelta(hours=8, minutes=45)).strftime("%H:%M:%S")
         start = datetime.now().strftime("%H:%M:%S")
         _query = "INSERT INTO {table} VALUES(DATE('{_d}'), TIME('{_s}'), TIME('{_e}'), 0, {_l});"
         if self.debug:
             print(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
-        self.cursor.execute(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
-        self.conn.commit()
+        try:
+            self.cursor.execute(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
+            self.conn.commit()
+        except sqlite3.IntegrityError:
+            print("Day already exists")
 
     def update_start(self, day='now', time='now'):
         _query = "UPDATE {_table} SET start=TIME('{_s}') WHERE day=DATE('{_d}')"
