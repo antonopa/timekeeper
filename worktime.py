@@ -40,7 +40,7 @@ def handle_db_calls(args):
             if args.show >= 2:
                 print("\nOvertime per day: ")
                 myp(call_retriever(tk.get_overtime))
-            if args.show == 3:
+            if args.show >= 3:
                 print("\nEverything: ")
                 myp(call_retriever(tk.get_period))
 
