@@ -100,28 +100,38 @@ class __Sqlite:
 
         return res
 
-    def _create_query(self, start_date=None, end_date=None):
-        _query = ("SELECT day,start,end,lunch_duration,"
-                  "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) as diff_sec "
-                  "from work_days where vacation!=1 {_where} order by day")
+    def _create_query(self, start_date=None, end_date=None, with_vacation=False):
+        """ Build a query to collect all data from the DB
 
+        Args:
+            start_date(str): return only results after this day; default is from 1st day in DB
+            end_date(str): return only results up to this day; default is up to last day in DB
+            with_vacation(bool): include vacation days in the results
+        """
+        vacation_check = "" if with_vacation else "vacation!=1"
+        query = ("SELECT day,start,end,lunch_duration,"
+                  "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) AS diff_sec "
+                  "FROM work_days WHERE {_vacation} {_period} ORDER BY day")
+
+        period = ""
         if start_date and end_date:
-            _query = _query.format(_where = " AND day>=DATE('{}') AND day<=DATE('{}')".format(start_date, end_date))
+            period = "day>=DATE('{}') AND day<=DATE('{}')".format(start_date, end_date)
         elif start_date:
-            _query = _query.format(_where = " AND day>=DATE('{}')".format(start_date))
+            period = "day>=DATE('{}')".format(start_date)
         elif end_date:
-            _query = _query.format(_where = " AND day<=DATE('{}')".format(end_date))
-        else:
-            _query = _query.format(_where = "")
+            period = "day<=DATE('{}')".format(end_date)
 
+        if period and not with_vacation:
+            period = "AND {}".format(period)
+
+        query = query.format(_vacation=vacation_check, _period=period)
         if self._debug:
-            print(_query)
+            print(query)
 
-        return _query
+        return query
 
-    def get_period(self, start_date=None, end_date=None):
-
-        return self._parse_results(self.cursor.execute(self._create_query(start_date, end_date)))
+    def get_period(self, start_date=None, end_date=None, with_vacation=False):
+        return self._parse_results(self.cursor.execute(self._create_query(start_date, end_date, with_vacation)))
 
 
     def get_all(self):
