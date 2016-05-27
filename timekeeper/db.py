@@ -3,6 +3,10 @@ from datetime import datetime, timedelta
 from pprint import PrettyPrinter
 
 
+class DBOperationError(Exception):
+    """ Basic exception to communicate DB operation fails """
+    pass
+
 def _sec2humantime(secs):
     """ Convert to human readable time """
     return str(timedelta(seconds=secs))
@@ -81,6 +85,33 @@ class __Sqlite:
         self.cursor.execute(_query.format(_table=self.table, _day=day, _lt=lunch_time))
         self.conn.commit()
 
+    def convert_vacation(self, day='now', vacation=None):
+        """ Toggle vacation flag for a day or set it explicitly to the input argument"""
+        query = self._create_query(start_date=day, end_date=day, with_vacation=True)
+        res = self._parse_results(self.cursor.execute(query))
+
+        if self._debug:
+            self.prettyprint(res)
+
+        # We only want to change an existing day. sqlite3 UPDATE fails silently if day
+        # isn't found and this way we can raise an exception.
+        if res:
+            if vacation is not None:
+                vflag = vacation
+            else:
+                today = datetime.now().strftime("%Y-%m-%d")
+                vflag = not res[today]['vacation']
+            update = "UPDATE {_t} SET vacation={_v} WHERE day=DATE('{_d}')".format(
+                    _t=self.table, _v=int(vflag), _d=day)
+            if self._debug:
+                self.prettyprint(update)
+
+            self.cursor.execute(update)
+            self.conn.commit()
+        else:
+            day = datetime.now().strftime("%Y-%m-%d") if day == 'now' else day
+            raise DBOperationError("Day {} doesn't exist".format(day))
+
     def expected_time(self, day='now'):
         query = "SELECT day,start,lunch_duration from work_days where vacation!=1 and day=DATE('{_d}')"
         c = self.cursor.execute(query.format(_d = day))
@@ -94,6 +125,8 @@ class __Sqlite:
         res = {}
         for row in sql_rows.fetchall():
             _d = dict(row)
+            if self._debug:
+                self.prettyprint(_d)
             _d['diff_human'] = _sec2humantime(row['diff_sec'])
             res[ _d['day'] ] = _d
             _d.pop('day')
@@ -109,7 +142,7 @@ class __Sqlite:
             with_vacation(bool): include vacation days in the results
         """
         vacation_check = "" if with_vacation else "vacation!=1"
-        query = ("SELECT day,start,end,lunch_duration,"
+        query = ("SELECT day,start,end,lunch_duration,vacation,"
                   "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) AS diff_sec "
                   "FROM work_days WHERE {_vacation} {_period} ORDER BY day")
 
