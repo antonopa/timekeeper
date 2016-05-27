@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime, timedelta
+from pprint import PrettyPrinter
 
 
 def _sec2humantime(secs):
@@ -16,8 +17,7 @@ class __Sqlite:
         self.sqlite_file = sqlite_file
         self._debug = False
         self.table = 'work_days'
-        self._daily = 8*60 + 45
-        self._lunch_duration = 45
+        self.prettyprint = PrettyPrinter(indent=2).pprint
         self.conn = sqlite3.connect(sqlite_file)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
