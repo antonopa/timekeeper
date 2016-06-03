@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Command line utility to update start/end time of work days and print reports on overtime.
+Command line utility to update start/end time of work days and print reports
+on overtime.
 """
 import argparse
 import pprint
@@ -37,15 +38,14 @@ def handle_db_calls(provided_args):
         if provided_args.out:
             print(work_time.expected_time())
         if provided_args.show:
-            if provided_args.show >= 1:
-                print("Overtime sum: ")
-                myp(call_retriever(work_time.overtime_to_str))
+            if provided_args.show >= 3:
+                print("Everything: ")
+                myp(call_retriever(work_time.get_period))
             if provided_args.show >= 2:
                 print("\nOvertime per day: ")
                 myp(call_retriever(work_time.get_overtime))
-            if provided_args.show >= 3:
-                print("\nEverything: ")
-                myp(call_retriever(work_time.get_period))
+            if provided_args.show >= 1:
+                print("\nOvertime sum: %s" % call_retriever(work_time.overtime_to_str))
 
         if provided_args.update is not None:
             end = provided_args.update[0] if provided_args.update else 'now'
@@ -111,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
