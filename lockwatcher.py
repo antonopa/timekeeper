@@ -8,7 +8,7 @@ import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
 
-from timekeeper import db
+from timekeeper.worktimedb import WorkTimeDB
 
 
 SQLITE_FILE = '/home/antonopa/.timekeeper.sqlite'
@@ -22,7 +22,7 @@ def handle_lock(lock_state):
         Every lock (LockState True) updates the DB with the current time and
         as a result last lock marks the end of the work day.
     """
-    with db.__Sqlite(SQLITE_FILE) as worktime:
+    with WorkTimeDB(SQLITE_FILE) as worktime:
         if lock_state:
             # System locked
             worktime.update_end(day='now', end='now')

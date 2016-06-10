@@ -8,7 +8,7 @@ import pprint
 from datetime import datetime
 import shutil
 
-from timekeeper import db
+from timekeeper.worktimedb import WorkTimeDB
 
 
 SQLITE_FILE = '/home/antonopa/.timekeeper.sqlite'
@@ -25,7 +25,7 @@ def handle_db_calls(provided_args):
 
     myp = pprint.PrettyPrinter(indent=2).pprint
 
-    with db.__Sqlite(SQLITE_FILE) as work_time:
+    with WorkTimeDB(SQLITE_FILE) as work_time:
         if provided_args.debug:
             work_time.debug = True
         if provided_args.add:
