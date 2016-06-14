@@ -15,7 +15,7 @@ setuptools.setup(
                  version="1.0",
                  url="https://github.com/antonopa/timekeeper",
                  packages=["timekeeper"],
-                 package_data={"timekeeper":["./README.md"]},
+                 #package_data={"timekeeper":["./README.md"]},
                  py_modules=['worktime', 'lockwatcher'],
                  description="Command line script and DB class to log work time and overtime",
                  long_description=long_description,
