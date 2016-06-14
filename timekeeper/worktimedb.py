@@ -58,7 +58,7 @@ class WorkTimeDB(object):
         """ initialize a database """
         db_table = table if table else self.table
         table_cmd = ("CREATE TABLE {_t} "
-                     "(day text, srart text, end text, vacation int, "
+                     "(day text, start text, end text, vacation int, "
                      "lunch_duration int, unique(day))")
         self.cursor.execute(table_cmd.format(_t=db_table))
 
