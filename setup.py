@@ -8,15 +8,13 @@ with open("README.md") as readme:
     long_description = readme.read()
 
 setuptools.setup(
-                 entry_points={"console_scripts": ["worktime = worktime:main",
-                                                    "wt = worktime:main",
-                                                    "lockwatcher = lockwatcher:main"]},
+                 entry_points={"console_scripts": ["worktime = timekeeper.tools.worktime:main",
+                                                    "wt = timekeeper.tools.worktime:main",
+                                                    "lockwatcher = timekeeper.tools.lockwatcher:main"]},
                  name="timekeeper",
-                 version="1.0",
+                 version="1.0.1",
                  url="https://github.com/antonopa/timekeeper",
-                 packages=["timekeeper"],
-                 #package_data={"timekeeper":["./README.md"]},
-                 py_modules=['worktime', 'lockwatcher'],
+                 packages=["timekeeper", "timekeeper.tools"],
                  description="Command line script and DB class to log work time and overtime",
                  long_description=long_description,
                  license="MIT",
