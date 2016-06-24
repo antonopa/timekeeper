@@ -4,12 +4,12 @@ mind and it's not expected/guaranteed to work with any older versions.
 
 ## Structure
 This consists of a main package under `timekeeper` which includes the DB wrapper
-class which handles all operations towards `SQLite`.
+class that handles all operations towards `SQLite`.
 Under `timekeeper` there is also a `tools` subpackage including all the command line
 tools to be able to handle the DB class.
 
-* `tools.lockwatcher`: This connects to D-Bus signals listening on gnome-screensaver
-  lock and unlock commands.
+* `tools.lockwatcher`: Connects to D-Bus signals listening on gnome-screensaver
+  lock and unlock events.
   - When the screen is locked it updates the end time of the current day. This assumes
   that the last screen lock is also the time when the user leaves the office.
   - When the screen is unlocked it tries to insert a new working day in the DB. If the
