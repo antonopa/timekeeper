@@ -48,13 +48,19 @@ def handle_db_calls(provided_args):
             myp("Leave earliest at: " + work_time.expected_time_str())
         if provided_args.show:
             if provided_args.show >= 3:
-                ("Everything: ")
-                myp(call_retriever(work_time.get_period))
+                print("Everything: ")
+                for k,v in call_retriever(work_time.get_period).items():
+                    print(k)
+                    print("\tStart: {}".format(v['Start']))
+                    print("\tEnd:   {}".format(v['End']))
+                    print("\tLeave: {}".format(v['Leave time']))
+                    print("\tDiff:  {}".format(v['HH:MM']))
             if provided_args.show >= 2:
-                ("\nOvertime per day: ")
-                myp(call_retriever(work_time.get_overtime))
+                print("Overtime per day: ")
+                for k in call_retriever(work_time.get_overtime):
+                    print("\t{!s}, minutes: {:4}/{}".format(*k))
             if provided_args.show >= 1:
-                myp("Overtime sum: %s" % call_retriever(work_time.overtime_to_str))
+                print("Overtime sum: %s" % call_retriever(work_time.overtime_to_str))
 
         if provided_args.update is not None:
             end = provided_args.update[0] if provided_args.update else 'now'

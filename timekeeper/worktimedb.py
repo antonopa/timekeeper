@@ -224,7 +224,9 @@ class WorkTimeDB(object):
         res = []
         for row in rows.fetchall():
             overtime = row['diff_min'] - full_day
-            res.append((row['day'], overtime, _sec2humantime(abs(overtime))))
+            t = _sec2humantime(abs(overtime))
+            t = t.split(':')[:2]
+            res.append((row['day'], overtime, "{}h{}m".format(*t)))
         return res
 
     def overtime_to_str(self, start_date=None, end_date=None):
