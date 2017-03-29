@@ -4,16 +4,15 @@ overtime data
 """
 import sqlite3
 from datetime import datetime, timedelta
-from pprint import PrettyPrinter
 
 
 class DBOperationError(Exception):
     """ Basic exception to communicate DB operation fails """
     pass
 
-def _sec2humantime(secs):
+def _sec2humantime(minutes):
     """ Convert to human readable time """
-    return str(timedelta(seconds=secs))
+    return str(timedelta(minutes=minutes))
 
 def _get_isotime(time):
     return datetime.now().strftime("%H:%M:%S") if time is 'now' else time
@@ -32,12 +31,24 @@ class WorkTimeDB(object):
 
     def __init__(self, sqlite_file):
         self.sqlite_file = sqlite_file
-        self._debug = False
+        self._debug = lambda _: None
         self.table = 'work_days'
-        self.prettyprint = PrettyPrinter(indent=2).pprint
-        self.conn = sqlite3.connect(sqlite_file)
+        init = False
+        try:
+            with open(sqlite_file) as sf:
+                pass
+        except Exception:
+            init = True
+            with open(sqlite_file, 'w') as _: pass
+
+
+        self.conn = sqlite3.connect(self.sqlite_file)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
+
+        if init:
+            self.initialize_db()
+
 
     @property
     def debug(self):
@@ -60,9 +71,11 @@ class WorkTimeDB(object):
         table_cmd = ("CREATE TABLE {_t} "
                      "(day text, start text, end text, vacation int, "
                      "lunch_duration int, unique(day))")
+        self._debug(table_cmd.format(_t=db_table))
         self.cursor.execute(table_cmd.format(_t=db_table))
 
         create_index = "CREATE UNIQUE INDEX date_idx ON {_t} (day)"
+        self._debug(create_index.format(_t=db_table))
         self.cursor.execute(create_index.format(_t=db_table))
 
         self.conn.commit()
@@ -73,9 +86,8 @@ class WorkTimeDB(object):
             end = (datetime.now() + timedelta(hours=8, minutes=45)).strftime("%H:%M:%S")
         start = datetime.now().strftime("%H:%M:%S")
         _query = "INSERT INTO {table} VALUES(DATE('{_d}'), TIME('{_s}'), TIME('{_e}'), 0, {_l});"
-        if self.debug:
-            print(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
         try:
+            self._debug(_query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
             self.cursor.execute(
                 _query.format(table=self.table, _d=day, _s=start, _e=end, _l=lunch_duration))
             self.conn.commit()
@@ -106,8 +118,7 @@ class WorkTimeDB(object):
         query = self._create_query(start_date=day, end_date=day, with_vacation=True)
         res = self._parse_results(self.cursor.execute(query))
 
-        if self._debug:
-            self.prettyprint(res)
+        self._debug(res)
 
         # We only want to change an existing day. sqlite3 UPDATE fails silently if day
         # isn't found and this way we can raise an exception.
@@ -119,8 +130,7 @@ class WorkTimeDB(object):
                 vflag = not res[today]['vacation']
             update = "UPDATE {_t} SET vacation={_v} WHERE day=DATE('{_d}')".format(
                 _t=self.table, _v=int(vflag), _d=day)
-            if self._debug:
-                self.prettyprint(update)
+            self._debug(update)
 
             self.cursor.execute(update)
             self.conn.commit()
@@ -128,7 +138,12 @@ class WorkTimeDB(object):
             day = datetime.now().strftime("%Y-%m-%d") if day == 'now' else day
             raise DBOperationError("Day {} doesn't exist".format(day))
 
-    def expected_time(self, day='now'):
+    def expected_time_str(self, day='now'):
+        """ Convert the expected time to a human readable format """
+        end = self._expected_time(day)
+        return "{_h}:{_m}".format(_h=end.hour, _m=end.minute)
+
+    def _expected_time(self, day='now'):
         """ Calculate the expected time to leave the office taking into account the starting time
         for the provided day """
         query = ("SELECT day,start,lunch_duration FROM work_days "
@@ -138,18 +153,21 @@ class WorkTimeDB(object):
         start = datetime.strptime(res['start'], "%H:%M:%S")
         end = start + timedelta(hours=8, minutes=res['lunch_duration'])
 
-        return "Earliest: {_h}:{_m}".format(_h=end.hour, _m=end.minute)
+        return end
 
     def _parse_results(self, sql_rows):
         """ Parse DB results and convert them to a python dictionary """
         res = {}
         for row in sql_rows.fetchall():
-            data = dict(row)
-            if self._debug:
-                self.prettyprint(data)
-            data['diff_human'] = _sec2humantime(row['diff_sec'])
-            res[data['day']] = data
-            data.pop('day')
+            _r = dict(row)
+            data = {}
+            self._debug(_r)
+            data['Start'] = str(_r['start'])
+            data['End'] = str(_r['end'])
+            data['Leave time'] = self.expected_time_str(_r['day'])
+            data['HH:MM'] = _sec2humantime(_r['diff_min'])
+            data['Min'] = _r['diff_min']
+            res[_r['day']] = data
 
         return res
 
@@ -162,9 +180,9 @@ class WorkTimeDB(object):
             with_vacation(bool): include vacation days in the results
         """
         vacation_check = "" if with_vacation else "vacation!=1"
-        query = ("SELECT day,start,end,lunch_duration,vacation,"
+        query = ("SELECT day,start,end,lunch_duration,"
                  "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) "
-                 "AS diff_sec FROM work_days WHERE {_vacation} {_period} ORDER BY day")
+                 "AS diff_min FROM work_days WHERE {_vacation} {_period} ORDER BY day")
 
         period = ""
         if start_date and end_date:
@@ -178,8 +196,7 @@ class WorkTimeDB(object):
             period = "AND {}".format(period)
 
         query = query.format(_vacation=vacation_check, _period=period)
-        if self._debug:
-            print(query)
+        self._debug(query)
 
         return query
 
@@ -206,7 +223,7 @@ class WorkTimeDB(object):
 
         res = []
         for row in rows.fetchall():
-            overtime = row['diff_sec'] - full_day
+            overtime = row['diff_min'] - full_day
             res.append((row['day'], overtime, _sec2humantime(abs(overtime))))
         return res
 

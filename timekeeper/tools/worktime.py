@@ -4,15 +4,17 @@ Command line utility to update start/end time of work days and print reports
 on overtime.
 """
 import argparse
-import pprint
+from sqlite3 import OperationalError
+from pprint import PrettyPrinter
+import sys
 from datetime import datetime
 import shutil
 
+from os import path
 from timekeeper.worktimedb import WorkTimeDB
 
 
-SQLITE_FILE = '/home/antonopa/.timekeeper.sqlite'
-
+SQLITE_FILE = path.join(path.expanduser('~'), '.timekeeper.sqlite')
 
 def handle_db_calls(provided_args):
     """ Handle all db related calls here """
@@ -23,29 +25,36 @@ def handle_db_calls(provided_args):
         end = provided_args.end_date[0] if provided_args.end_date else None
         return func(start, end)
 
-    myp = pprint.PrettyPrinter(indent=2).pprint
+    myp = PrettyPrinter(indent=2).pprint
+    __DBG = lambda _: None
 
     with WorkTimeDB(SQLITE_FILE) as work_time:
         if provided_args.debug:
-            work_time.debug = True
+            def dbg(x):
+                PrettyPrinter(indent=2).pprint(x)
+            __DBG = dbg
+            __DBG("Debug on")
+            __DBG(provided_args)
+            work_time.debug = dbg
         if provided_args.add:
+            __DBG("Add: " + provided_args.add[0])
             work_time.insert_day(provided_args.add[0])
         if provided_args.balance:
-            print(provided_args.balance)
+            myp(provided_args.balance)
             work_time.insert_day(
                 day='now' if not provided_args.start_date else provided_args.start_date[0],
                 end=datetime.now().strftime("%H:%M:%S"), lunch_duration=0)
         if provided_args.out:
-            print(work_time.expected_time())
+            myp("Leave earliest at: " + work_time.expected_time_str())
         if provided_args.show:
             if provided_args.show >= 3:
-                print("Everything: ")
+                ("Everything: ")
                 myp(call_retriever(work_time.get_period))
             if provided_args.show >= 2:
-                print("\nOvertime per day: ")
+                ("\nOvertime per day: ")
                 myp(call_retriever(work_time.get_overtime))
             if provided_args.show >= 1:
-                print("\nOvertime sum: %s" % call_retriever(work_time.overtime_to_str))
+                myp("Overtime sum: %s" % call_retriever(work_time.overtime_to_str))
 
         if provided_args.update is not None:
             end = provided_args.update[0] if provided_args.update else 'now'
@@ -69,7 +78,7 @@ def _get_args():
     """ Add all the needed arguments in ArgumentParser and return the ones with
     which this was called """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--add", nargs='*',
+    parser.add_argument("-a", "--add", nargs='+',
                         help='Add new day in the DB')
     parser.add_argument("-o", "--out", action='store_true',
                         help='Print the end of the current work day')
@@ -86,6 +95,7 @@ def _get_args():
     parser.add_argument("-d", "--debug", action='store_true')
 
     parser.add_argument("-p", "--period", action='store_true')
+    parser.add_argument("-i", "--initdb", action='store_true')
     parser.add_argument("-sd", "--start_date", nargs=1,
                         help='Filter used with the --period command (use now to use today\'s day)')
     parser.add_argument("-ed", "--end_date", nargs=1,
