@@ -7,11 +7,12 @@ Basic dbus listener to monitor locking/unlocking of screen. Unlocking tries to i
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
+from os import path
 
 from timekeeper.worktimedb import WorkTimeDB
 
 
-SQLITE_FILE = '/home/antonopa/.timekeeper.sqlite'
+SQLITE_FILE = path.join(path.expanduser('~'), '.timekeeper.sqlite')
 
 
 def handle_lock(lock_state):
