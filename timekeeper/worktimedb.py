@@ -12,7 +12,7 @@ class DBOperationError(Exception):
 
 def _sec2humantime(minutes):
     """ Convert to human readable time """
-    return str(timedelta(minutes=minutes))
+    return "{:>8}".format(str(timedelta(minutes=minutes)))
 
 def _get_isotime(time):
     return datetime.now().strftime("%H:%M:%S") if time is 'now' else time
@@ -141,7 +141,7 @@ class WorkTimeDB(object):
     def expected_time_str(self, day='now'):
         """ Convert the expected time to a human readable format """
         end = self._expected_time(day)
-        return "{_h}:{_m}".format(_h=end.hour, _m=end.minute)
+        return "{:0>2}:{:0>2}:{:0>2}".format(end.hour, end.minute, end.second)
 
     def _expected_time(self, day='now'):
         """ Calculate the expected time to leave the office taking into account the starting time
