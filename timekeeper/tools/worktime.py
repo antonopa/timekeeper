@@ -54,7 +54,7 @@ def handle_db_calls(provided_args):
                     print("\tStart: {}".format(v['Start']))
                     print("\tEnd:   {}".format(v['End']))
                     print("\tLeave: {}".format(v['Leave time']))
-                    print("\tDiff:  {}".format(v['HH:MM']))
+                    print("\tWork time:  {}".format(v['HH:MM']))
             if provided_args.show >= 2:
                 print("Overtime per day: ")
                 for k in call_retriever(work_time.get_overtime):

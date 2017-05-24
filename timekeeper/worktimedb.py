@@ -181,7 +181,7 @@ class WorkTimeDB(object):
         """
         vacation_check = "" if with_vacation else "vacation!=1"
         query = ("SELECT day,start,end,lunch_duration,"
-                 "((strftime('%s', end)-strftime('%s', start))/60 + 45 - lunch_duration) "
+                 "((strftime('%s', end)-strftime('%s', start))/60 - lunch_duration) "
                  "AS diff_min FROM work_days WHERE {_vacation} {_period} ORDER BY day")
 
         period = ""
@@ -217,7 +217,7 @@ class WorkTimeDB(object):
 
     def get_overtime(self, start_date=None, end_date=None):
         """ Calculate the overtime over a specific period """
-        full_day = 480 + 45
+        full_day = 480
 
         rows = self.cursor.execute(self._create_query(start_date, end_date))
 
