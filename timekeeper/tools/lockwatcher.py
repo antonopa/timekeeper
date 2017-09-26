@@ -34,7 +34,7 @@ def handle_lock(lock_state):
 
 SIGNALS = {
     'ActiveChanged':
-    {'service':'org.gnome.ScreenSaver', 'iface':'org.gnome.ScreenSaver', 'method':handle_lock}
+    {'service':'org.freedesktop.ScreenSaver', 'iface':'org.freedesktop.ScreenSaver', 'method':handle_lock}
 }
 
 
