@@ -17,6 +17,7 @@ setuptools.setup(
                  packages=["timekeeper", "timekeeper.tools"],
                  description="Command line script and DB class to log work time and overtime",
                  long_description=long_description,
+                 install_requires=['dbus-python'],
                  license="MIT",
                  author="Alexandros Antonopoulos",
                  author_email="antonopa@gmail.com"
