@@ -12,7 +12,11 @@ class DBOperationError(Exception):
 
 def _sec2humantime(minutes):
     """ Convert to human readable time """
-    return "{:>8}".format(str(timedelta(minutes=minutes)))
+    if minutes < 0:
+        rpr = "- " + str(timedelta() - timedelta(minutes=minutes))
+    else:
+        rpr = str(timedelta(minutes=minutes))
+    return "{:>8}".format(rpr)
 
 def _get_isotime(time):
     return datetime.now().strftime("%H:%M:%S") if time is 'now' else time

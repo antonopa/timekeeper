@@ -50,11 +50,11 @@ def handle_db_calls(provided_args):
             if provided_args.show >= 3:
                 print("Everything: ")
                 for k,v in call_retriever(work_time.get_period).items():
-                    print(k)
-                    print("\tStart: {}".format(v['Start']))
-                    print("\tEnd:   {}".format(v['End']))
-                    print("\tLeave: {}".format(v['Leave time']))
-                    print("\tWork time:  {}".format(v['HH:MM']))
+                    print(f"## Date: {k}")
+                    print(f"\tStart: {v['Start']}")
+                    print(f"\tEnd:   {v['End']}")
+                    print(f"\tLeave: {v['Leave time']}")
+                    print(f"\tWork time:  {v['HH:MM']}")
             if provided_args.show >= 2:
                 print("Overtime per day: ")
                 for k in call_retriever(work_time.get_overtime):
